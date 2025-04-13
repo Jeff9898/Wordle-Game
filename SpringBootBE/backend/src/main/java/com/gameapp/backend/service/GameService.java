@@ -1,17 +1,38 @@
 package com.gameapp.backend.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import com.gameapp.backend.model.LetterFeedback;
+
+import jakarta.annotation.PostConstruct;
+
 import com.gameapp.backend.model.GuessResponse;
 
 @Service
 public class GameService {
-    private static final String[] WORD_LIST = {"CRANE", "HEART", "BEACH", "DREAM", "SPARK", "PLANT", "FLAME", "GRASS", "SLEEP", "SHINE"};
+    private List<String> WORD_LIST; 
     private String currentWord;
     private int attempts;
     private static final int MAX_ATTEMPTS = 6;
-    
-    public GameService() {
+
+    @PostConstruct
+    public void init() throws IOException {
+        InputStream input = getClass().getResourceAsStream("/wordle-list.txt");
+        if (input == null) {
+            throw new IOException("wordle-list.txt not found in classpath");
+        }
+        WORD_LIST = new BufferedReader(new InputStreamReader(input))
+                    .lines()
+                    .map(String::trim)
+                    .map(String::toUpperCase)
+                    .filter(word -> word.length() == 5)
+                    .collect(Collectors.toList());
         startNewGame();
     }
 
@@ -21,8 +42,8 @@ public class GameService {
     }
 
     private String getRandomWord() {
-        int index = (int) (Math.random() * WORD_LIST.length);
-        return WORD_LIST[index].toUpperCase();
+        int index = (int) (Math.random() * WORD_LIST.size());
+        return WORD_LIST.get(index);
     }
 
     public GuessResponse checkGuess(String guess) {
