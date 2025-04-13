@@ -27,12 +27,13 @@ public class GameService {
         if (input == null) {
             throw new IOException("wordle-list.txt not found in classpath");
         }
-        WORD_LIST = new BufferedReader(new InputStreamReader(input))
-                    .lines()
-                    .map(String::trim)
-                    .map(String::toUpperCase)
-                    .filter(word -> word.length() == 5)
-                    .collect(Collectors.toList());
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
+            WORD_LIST = reader.lines()
+                              .map(String::trim)
+                              .map(String::toUpperCase)
+                              .filter(word -> word.length() == 5)
+                              .collect(Collectors.toList());
+        }
         startNewGame();
     }
 
