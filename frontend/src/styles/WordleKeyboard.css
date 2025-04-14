@@ -1,0 +1,41 @@
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.key {
+    padding: 10px 15px;
+    border: 2px solid lightgray;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+/* Colors for key statuses */
+.key.correct {
+    background-color: #6aaa64;  /* green */
+    border-color: #6aaa64;
+    color: white;
+}
+
+.key.present {
+    background-color: #c9b458;  /* yellow */
+    border-color: #c9b458;
+    color: white;
+}
+
+.key.absent {
+    background-color: #787c7e;  /* dark gray */
+    border-color: #787c7e;
+    color: white;
+}

@@ -48,12 +48,13 @@ public class GameService {
     }
 
     public GuessResponse checkGuess(String guess) {
-        attempts++;
         guess = guess.toUpperCase();
         
         if (guess.length() != 5) {
             return new GuessResponse(null, false, false, "Guess must be 5 letters");
         }
+
+        attempts++; // Move increment here, after validation
 
         LetterFeedback[] feedback = new LetterFeedback[5];
         boolean isWin = true;

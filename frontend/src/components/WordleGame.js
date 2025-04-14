@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/WordleGame.css';
+import WordleKeyboard from './WordleKeyboard';
 
 const WordleGame = () => {
     const [guesses, setGuesses] = useState([]);
@@ -7,6 +8,7 @@ const WordleGame = () => {
     const [feedback, setFeedback] = useState([]);
     const [gameOver, setGameOver] = useState(false);
     const [message, setMessage] = useState('');
+    const [keyStatuses, setKeyStatuses] = useState({});
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyPress);
@@ -27,6 +29,18 @@ const WordleGame = () => {
         }
     };
 
+    const handleKeyClick = (key) => {
+        if (gameOver) return;
+
+        if (key === 'Enter' && currentGuess.length === 5) {
+            submitGuess();
+        } else if (key === 'Back') {
+            setCurrentGuess(prev => prev.slice(0, -1));
+        } else if (currentGuess.length < 5 && key.match(/^[a-zA-Z]$/)) {
+            setCurrentGuess(prev => prev + key.toUpperCase());
+        }
+    };
+
     const submitGuess = async () => {
         try {
             const response = await fetch('http://localhost:8080/api/guess', {
@@ -43,6 +57,7 @@ const WordleGame = () => {
             setGameOver(result.gameOver);
             setMessage(result.message);
             setCurrentGuess('');
+            updateKeyStatuses(currentGuess, result.feedback);
             
         } catch (error) {
             console.error('Error:', error);
@@ -60,11 +75,37 @@ const WordleGame = () => {
             setCurrentGuess('');
             setGameOver(false);
             setMessage('');
+            setKeyStatuses({});
         } catch (error) {
             console.error('Error:', error);
             setMessage('Error starting new game');
         }
     };
+
+    // Update function for key statuses
+    function updateKeyStatuses(guess, feedback) {
+        // feedback is an array of statuses for each letter in guess
+        // possible statuses: 'correct', 'present', 'absent' (should match CSS classes)
+        setKeyStatuses(prevStatuses => {
+            const newStatuses = { ...prevStatuses };
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess.charAt(i);
+                const status = feedback[i].toLowerCase();  // ensure lowercase
+                const currStatus = newStatuses[letter] || 'none';
+
+                // If already correct, don't downgrade
+                if (currStatus === 'correct') continue;
+                if (
+                    status === 'correct' ||
+                    (status === 'present' && currStatus !== 'present' && currStatus !== 'correct') ||
+                    (status === 'absent' && currStatus === 'none')
+                ) {
+                    newStatuses[letter] = status;
+                }
+            }
+            return newStatuses;
+        });
+    }
 
     return (
         <div className="wordle-game">
@@ -96,6 +137,7 @@ const WordleGame = () => {
                     New Game
                 </button>
             )}
+            <WordleKeyboard keyStatuses={keyStatuses} onKeyClick={handleKeyClick} />
         </div>
     );
 };
